@@ -5,16 +5,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom global styles, e.g.: */
+:root {
+  --background: theme('colors.gray.50');
+  --foreground: theme('colors.gray.800');
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: theme('colors.gray.900');
+    --foreground: theme('colors.gray.100');
+  }
+}
+
 body {
-  @apply bg-gray-50 text-gray-800;
+  color: var(--foreground);
+  background: var(--background);
   margin: 0;
   padding: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 
                "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-
-
 
 /* @tailwind base;
 @tailwind components;
