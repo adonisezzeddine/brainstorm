@@ -1,50 +1,59 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 /**
- * This page has:
- * 1. A top nav bar (like NotebookLM) with the brand + sign out button.
- * 2. A left sidebar to list existing notes.
- * 3. The main content area to view/edit notes and run AI summaries.
+ * NotesPage: A Note-taking app with AI summary functionality.
+ * Features:
+ * 1. Top Navigation Bar with Branding + Sign Out
+ * 2. Sidebar for Listing Notes
+ * 3. Main Editor for Viewing/Editing Notes with AI Summary
  */
+
+type Note = {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string;
+};
 
 export default function NotesPage() {
   const router = useRouter();
-
-  // Our note data / local states
-  const [notes, setNotes] = useState<any[]>([]);
+  
+  // Local states for notes
+  const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  // For AI summary
+  // AI Summary states
   const [summary, setSummary] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
-  // On mount, check if we have a session & fetch notes
-  useEffect(() => {
-    checkSessionAndFetch();
-  }, []);
-
-  async function checkSessionAndFetch() {
+  // Check user session and fetch notes
+  const checkSessionAndFetch = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData?.session) {
-      // Not logged in, redirect to login
       router.push("/login");
       return;
     }
     fetchNotes();
-  }
+  }, [router]);
 
-  // Fetch notes from supabase
+  useEffect(() => {
+    checkSessionAndFetch();
+  }, [checkSessionAndFetch]);
+
+  // Fetch notes from Supabase
   async function fetchNotes() {
     const { data, error } = await supabase
       .from("notes")
       .select("*")
       .order("created_at", { ascending: false });
+
     if (error) {
       console.error(error);
       return;
@@ -52,36 +61,27 @@ export default function NotesPage() {
     setNotes(data || []);
   }
 
-  // Create a new note or update existing note
+  // Save (Create/Update) a note
   async function saveNote() {
-    if (!title.trim()) return; // skip if empty
+    if (!title.trim()) return;
 
     if (selectedNoteId) {
-      // Update
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("notes")
         .update({ title, content })
         .eq("id", selectedNoteId);
-      if (!error) {
-        fetchNotes();
-      } else {
-        console.error(error);
-      }
+
+      if (!error) fetchNotes();
     } else {
-      // Insert
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("notes")
         .insert([{ title, content }]);
-      if (!error) {
-        fetchNotes();
-      } else {
-        console.error(error);
-      }
+
+      if (!error) fetchNotes();
     }
-    // After save, keep the same note selected or if new, we'll handle
   }
 
-  // Handle selecting a note from the sidebar
+  // Select a note from the sidebar
   function selectNote(noteId: number) {
     setSelectedNoteId(noteId);
     setSummary("");
@@ -92,7 +92,7 @@ export default function NotesPage() {
     }
   }
 
-  // Start a new note
+  // Create a new blank note
   function newNote() {
     setSelectedNoteId(null);
     setTitle("");
@@ -100,9 +100,10 @@ export default function NotesPage() {
     setSummary("");
   }
 
-  // Summarize with AI
+  // Generate AI Summary
   async function summarizeNote() {
     if (!content.trim()) return;
+
     try {
       setAiLoading(true);
       const res = await fetch("/api/ai", {
@@ -110,8 +111,10 @@ export default function NotesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: "summary", content }),
       });
+
       const data = await res.json();
       setAiLoading(false);
+
       if (res.ok) {
         setSummary(data.summary);
       } else {
@@ -123,7 +126,7 @@ export default function NotesPage() {
     }
   }
 
-  // Sign out
+  // Sign out function
   async function signOut() {
     await supabase.auth.signOut();
     router.push("/login");
@@ -131,13 +134,13 @@ export default function NotesPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Top Nav (NotebookLM-inspired) */}
+      {/* Top Navigation Bar */}
       <header className="border-b bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <a href="/" className="text-xl font-bold text-brainstorm-primary">
+            <Link href="/" className="text-xl font-bold text-brainstorm-primary">
               Brainstorm
-            </a>
+            </Link>
             <span className="text-gray-500 hidden md:inline-block">
               AI-Enhanced Notes
             </span>
@@ -151,9 +154,9 @@ export default function NotesPage() {
         </div>
       </header>
 
-      {/* Main content area: sidebar + note editor */}
+      {/* Main Content: Sidebar + Note Editor */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar / Notes List */}
+        {/* Sidebar: List of Notes */}
         <aside className="w-64 bg-white border-r hidden md:flex flex-col">
           <div className="border-b p-4">
             <button
@@ -178,9 +181,10 @@ export default function NotesPage() {
           </div>
         </aside>
 
-        {/* Note Editor Area */}
+        {/* Note Editor */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
           <div className="max-w-3xl mx-auto bg-white rounded shadow p-4 md:p-6">
+            {/* Title Input */}
             <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-600 mb-1">
                 Title
@@ -193,6 +197,7 @@ export default function NotesPage() {
               />
             </div>
 
+            {/* Content Textarea */}
             <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-600 mb-1">
                 Content
@@ -206,6 +211,7 @@ export default function NotesPage() {
               />
             </div>
 
+            {/* Buttons */}
             <div className="flex space-x-3">
               <button
                 onClick={saveNote}
@@ -216,14 +222,13 @@ export default function NotesPage() {
               <button
                 onClick={summarizeNote}
                 disabled={aiLoading || !content.trim()}
-                className="px-4 py-2 border border-brainstorm-primary text-brainstorm-primary rounded
-                           hover:bg-brainstorm-primary hover:text-white transition disabled:opacity-50"
+                className="px-4 py-2 border border-brainstorm-primary text-brainstorm-primary rounded hover:bg-brainstorm-primary hover:text-white transition disabled:opacity-50"
               >
                 {aiLoading ? "Summarizing..." : "Summarize with AI"}
               </button>
             </div>
 
-            {/* AI Summary Panel */}
+            {/* AI Summary Output */}
             {summary && (
               <div className="mt-6 p-4 border border-dashed border-brainstorm-primary rounded bg-gray-50">
                 <h3 className="font-semibold text-gray-700 mb-2">AI Summary</h3>
@@ -236,6 +241,246 @@ export default function NotesPage() {
     </div>
   );
 }
+
+
+// "use client";
+
+// import React, { useEffect, useState } from "react";
+// import { supabase } from "@/lib/supabaseClient";
+// import { useRouter } from "next/navigation";
+
+// /**
+//  * This page has:
+//  * 1. A top nav bar (like NotebookLM) with the brand + sign out button.
+//  * 2. A left sidebar to list existing notes.
+//  * 3. The main content area to view/edit notes and run AI summaries.
+//  */
+
+// export default function NotesPage() {
+//   const router = useRouter();
+
+//   // Our note data / local states
+//   const [notes, setNotes] = useState<any[]>([]);
+//   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+//   const [title, setTitle] = useState("");
+//   const [content, setContent] = useState("");
+
+//   // For AI summary
+//   const [summary, setSummary] = useState("");
+//   const [aiLoading, setAiLoading] = useState(false);
+
+//   // On mount, check if we have a session & fetch notes
+//   useEffect(() => {
+//     checkSessionAndFetch();
+//   }, []);
+
+//   async function checkSessionAndFetch() {
+//     const { data: sessionData } = await supabase.auth.getSession();
+//     if (!sessionData?.session) {
+//       // Not logged in, redirect to login
+//       router.push("/login");
+//       return;
+//     }
+//     fetchNotes();
+//   }
+
+//   // Fetch notes from supabase
+//   async function fetchNotes() {
+//     const { data, error } = await supabase
+//       .from("notes")
+//       .select("*")
+//       .order("created_at", { ascending: false });
+//     if (error) {
+//       console.error(error);
+//       return;
+//     }
+//     setNotes(data || []);
+//   }
+
+//   // Create a new note or update existing note
+//   async function saveNote() {
+//     if (!title.trim()) return; // skip if empty
+
+//     if (selectedNoteId) {
+//       // Update
+//       const { data, error } = await supabase
+//         .from("notes")
+//         .update({ title, content })
+//         .eq("id", selectedNoteId);
+//       if (!error) {
+//         fetchNotes();
+//       } else {
+//         console.error(error);
+//       }
+//     } else {
+//       // Insert
+//       const { data, error } = await supabase
+//         .from("notes")
+//         .insert([{ title, content }]);
+//       if (!error) {
+//         fetchNotes();
+//       } else {
+//         console.error(error);
+//       }
+//     }
+//     // After save, keep the same note selected or if new, we'll handle
+//   }
+
+//   // Handle selecting a note from the sidebar
+//   function selectNote(noteId: number) {
+//     setSelectedNoteId(noteId);
+//     setSummary("");
+//     const note = notes.find((n) => n.id === noteId);
+//     if (note) {
+//       setTitle(note.title);
+//       setContent(note.content);
+//     }
+//   }
+
+//   // Start a new note
+//   function newNote() {
+//     setSelectedNoteId(null);
+//     setTitle("");
+//     setContent("");
+//     setSummary("");
+//   }
+
+//   // Summarize with AI
+//   async function summarizeNote() {
+//     if (!content.trim()) return;
+//     try {
+//       setAiLoading(true);
+//       const res = await fetch("/api/ai", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ mode: "summary", content }),
+//       });
+//       const data = await res.json();
+//       setAiLoading(false);
+//       if (res.ok) {
+//         setSummary(data.summary);
+//       } else {
+//         alert(data.message);
+//       }
+//     } catch (err) {
+//       console.error(err);
+//       setAiLoading(false);
+//     }
+//   }
+
+//   // Sign out
+//   async function signOut() {
+//     await supabase.auth.signOut();
+//     router.push("/login");
+//   }
+
+//   return (
+//     <div className="h-screen flex flex-col">
+//       {/* Top Nav (NotebookLM-inspired) */}
+//       <header className="border-b bg-white shadow-sm">
+//         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+//           <div className="flex items-center space-x-4">
+//             <a href="/" className="text-xl font-bold text-brainstorm-primary">
+//               Brainstorm
+//             </a>
+//             <span className="text-gray-500 hidden md:inline-block">
+//               AI-Enhanced Notes
+//             </span>
+//           </div>
+//           <button
+//             onClick={signOut}
+//             className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
+//           >
+//             Sign Out
+//           </button>
+//         </div>
+//       </header>
+
+//       {/* Main content area: sidebar + note editor */}
+//       <div className="flex flex-1 overflow-hidden">
+//         {/* Sidebar / Notes List */}
+//         <aside className="w-64 bg-white border-r hidden md:flex flex-col">
+//           <div className="border-b p-4">
+//             <button
+//               onClick={newNote}
+//               className="w-full bg-brainstorm-primary text-white py-2 rounded hover:bg-indigo-600 transition"
+//             >
+//               + New Note
+//             </button>
+//           </div>
+//           <div className="flex-1 overflow-y-auto p-4 space-y-2">
+//             {notes.map((note) => (
+//               <div
+//                 key={note.id}
+//                 onClick={() => selectNote(note.id)}
+//                 className={`p-2 rounded cursor-pointer hover:bg-gray-100 ${
+//                   selectedNoteId === note.id ? "bg-gray-100 font-medium" : ""
+//                 }`}
+//               >
+//                 {note.title || "Untitled"}
+//               </div>
+//             ))}
+//           </div>
+//         </aside>
+
+//         {/* Note Editor Area */}
+//         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+//           <div className="max-w-3xl mx-auto bg-white rounded shadow p-4 md:p-6">
+//             <div className="mb-4">
+//               <label className="block text-sm font-semibold text-gray-600 mb-1">
+//                 Title
+//               </label>
+//               <input
+//                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-brainstorm-primary"
+//                 placeholder="Note Title"
+//                 value={title}
+//                 onChange={(e) => setTitle(e.target.value)}
+//               />
+//             </div>
+
+//             <div className="mb-4">
+//               <label className="block text-sm font-semibold text-gray-600 mb-1">
+//                 Content
+//               </label>
+//               <textarea
+//                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-brainstorm-primary"
+//                 rows={8}
+//                 placeholder="Write your thoughts..."
+//                 value={content}
+//                 onChange={(e) => setContent(e.target.value)}
+//               />
+//             </div>
+
+//             <div className="flex space-x-3">
+//               <button
+//                 onClick={saveNote}
+//                 className="px-4 py-2 bg-brainstorm-primary text-white rounded hover:bg-indigo-600 transition"
+//               >
+//                 {selectedNoteId ? "Update Note" : "Create Note"}
+//               </button>
+//               <button
+//                 onClick={summarizeNote}
+//                 disabled={aiLoading || !content.trim()}
+//                 className="px-4 py-2 border border-brainstorm-primary text-brainstorm-primary rounded
+//                            hover:bg-brainstorm-primary hover:text-white transition disabled:opacity-50"
+//               >
+//                 {aiLoading ? "Summarizing..." : "Summarize with AI"}
+//               </button>
+//             </div>
+
+//             {/* AI Summary Panel */}
+//             {summary && (
+//               <div className="mt-6 p-4 border border-dashed border-brainstorm-primary rounded bg-gray-50">
+//                 <h3 className="font-semibold text-gray-700 mb-2">AI Summary</h3>
+//                 <p className="whitespace-pre-wrap text-gray-800">{summary}</p>
+//               </div>
+//             )}
+//           </div>
+//         </main>
+//       </div>
+//     </div>
+//   );
+// }
 
 // "use client";
 // import React, { useEffect, useState } from "react";

@@ -1,3 +1,6 @@
+import Image from "next/image";
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <div className="text-center space-y-6 pt-16">
@@ -8,24 +11,57 @@ export default function HomePage() {
         Create and manage notes with AI-powered insights, all in one place.
       </p>
       <div>
-        <a
+        <Link
           href="/register"
           className="px-6 py-3 bg-brainstorm-primary text-white rounded hover:bg-indigo-600 transition"
         >
           Get Started
-        </a>
+        </Link>
       </div>
 
       <div className="flex justify-center mt-12">
-        <img
+        <Image
           src="/hero-illustration.png"
           alt="Brainstorm Hero"
+          width={600} // Set appropriate width
+          height={400} // Set appropriate height
           className="w-1/2 object-cover rounded shadow"
+          priority // Ensures it loads faster
         />
       </div>
     </div>
   );
 }
+
+
+// export default function HomePage() {
+//   return (
+//     <div className="text-center space-y-6 pt-16">
+//       <h1 className="text-5xl font-extrabold text-gray-800">
+//         Welcome to <span className="text-brainstorm-primary">Brainstorm</span>
+//       </h1>
+//       <p className="max-w-2xl mx-auto text-gray-600 text-lg">
+//         Create and manage notes with AI-powered insights, all in one place.
+//       </p>
+//       <div>
+//         <a
+//           href="/register"
+//           className="px-6 py-3 bg-brainstorm-primary text-white rounded hover:bg-indigo-600 transition"
+//         >
+//           Get Started
+//         </a>
+//       </div>
+
+//       <div className="flex justify-center mt-12">
+//         <img
+//           src="/hero-illustration.png"
+//           alt="Brainstorm Hero"
+//           className="w-1/2 object-cover rounded shadow"
+//         />
+//       </div>
+//     </div>
+//   );
+// }
 
 
 
