@@ -1,16 +1,26 @@
-import Image from "next/image";
+
 import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="text-center space-y-6 pt-16">
-      <h1 className="text-5xl font-extrabold text-gray-800">
-        Welcome to <span className="text-brainstorm-primary">Brainstorm</span>
-      </h1>
-      <p className="max-w-2xl mx-auto text-gray-600 text-lg">
-        Create and manage notes with AI-powered insights, all in one place.
-      </p>
-      <div>
+    <div className="relative h-screen w-full">
+      {/* Background Video */}
+      <video
+        src="/20250302_2120_Futuristic Brain Interface_remix_01jnc88hjpe62t9t9pmrc8wwfm.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 object-cover w-full h-full"
+      />
+      {/* Overlay Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center space-y-6 px-4">
+        <h1 className="text-5xl font-extrabold text-white">
+          Welcome to <span className="text-brainstorm-primary">Brainstorm</span>
+        </h1>
+        <p className="max-w-2xl mx-auto text-white text-lg">
+          Create and manage notes with AI-powered insights, all in one place.
+        </p>
         <Link
           href="/register"
           className="px-6 py-3 bg-brainstorm-primary text-white rounded hover:bg-indigo-600 transition"
@@ -18,20 +28,87 @@ export default function HomePage() {
           Get Started
         </Link>
       </div>
-
-      <div className="flex justify-center mt-12">
-        <Image
-          src="/hero-illustration.png"
-          alt="Brainstorm Hero"
-          width={600} // Set appropriate width
-          height={400} // Set appropriate height
-          className="w-1/2 object-cover rounded shadow"
-          priority // Ensures it loads faster
-        />
-      </div>
+      {/* Optional: Overlay for dimming effect */}
+      <div className="absolute inset-0 bg-black opacity-40"></div>
     </div>
   );
 }
+
+
+// import Link from "next/link";
+
+// export default function HomePage() {
+//   return (
+//     <div className="text-center space-y-6 pt-16">
+//       <h1 className="text-5xl font-extrabold text-gray-800">
+//         Welcome to <span className="text-brainstorm-primary">Brainstorm</span>
+//       </h1>
+//       <p className="max-w-2xl mx-auto text-gray-600 text-lg">
+//         Create and manage notes with AI-powered insights, all in one place.
+//       </p>
+//       <div>
+//         <Link
+//           href="/register"
+//           className="px-6 py-3 bg-brainstorm-primary text-white rounded hover:bg-indigo-600 transition"
+//         >
+//           Get Started
+//         </Link>
+//       </div>
+
+//       <div className="flex justify-center mt-12">
+//         <video
+//           src="/20250302_2120_Futuristic Brain Interface_remix_01jnc88hjpe62t9t9pmrc8wwfm.mp4"
+//           width={600}
+//           height={400}
+//           className="w-1/2 object-cover rounded shadow"
+//           controls
+//           autoPlay
+//           loop
+//           muted
+//         >
+//           Your browser does not support the video tag.
+//         </video>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+// import Image from "next/image";
+// import Link from "next/link";
+
+// export default function HomePage() {
+//   return (
+//     <div className="text-center space-y-6 pt-16">
+//       <h1 className="text-5xl font-extrabold text-gray-800">
+//         Welcome to <span className="text-brainstorm-primary">Brainstorm</span>
+//       </h1>
+//       <p className="max-w-2xl mx-auto text-gray-600 text-lg">
+//         Create and manage notes with AI-powered insights, all in one place.
+//       </p>
+//       <div>
+//         <Link
+//           href="/register"
+//           className="px-6 py-3 bg-brainstorm-primary text-white rounded hover:bg-indigo-600 transition"
+//         >
+//           Get Started
+//         </Link>
+//       </div>
+
+//       <div className="flex justify-center mt-12">
+//         <Image
+//           src="/20250302_2120_Futuristic Brain Interface_remix_01jnc88hjpe62t9t9pmrc8wwfm.mp4"
+//           alt="Brainstorm Hero"
+//           width={600} // Set appropriate width
+//           height={400} // Set appropriate height
+//           className="w-1/2 object-cover rounded shadow"
+//           priority // Ensures it loads faster
+//         />
+//       </div>
+//     </div>
+//   );
+// }
 
 
 // export default function HomePage() {
