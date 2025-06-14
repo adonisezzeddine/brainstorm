@@ -1,0 +1,22 @@
+/* styles/globals.css */
+
+/* 1. Tailwind’s base reset + core */
+@tailwind base;
+
+/* 2. Tailwind’s component classes */
+@tailwind components;
+
+/* 3. Tailwind’s utility classes */
+@tailwind utilities;
+
+/* 4. Your custom utilities or overrides */
+@layer utilities {
+  /* glass-morphism backdrop helper */
+  .backdrop-blur-sm {
+    backdrop-filter: blur(6px);
+  }
+  /* example: swap “text-white” default for darker body text */
+  body:not(.dark) {
+    color: #1f2937; /* gray-800 */
+  }
+}
