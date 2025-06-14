@@ -1,0 +1,20 @@
+{
+  "name": "brainstorm-monorepo",
+  "private": true,
+  "workspaces": [
+    "brainstorm"
+  ],
+  "scripts": {
+    "dev": "cd brainstorm && next dev",
+    "build": "cd brainstorm && next build",
+    "start": "cd brainstorm && next start",
+    "lint": "cd brainstorm && next lint"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "tiptap-extension-font-size": "1.2.0"
+  }
+}
